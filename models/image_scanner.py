@@ -15,6 +15,10 @@ class ImageScanner:
     def cancel(self):
         self._is_cancelled = True
 
+    def is_cancelled(self) -> bool:
+        """스캔이 취소되었는지 여부를 반환합니다."""
+        return self._is_cancelled
+
     def calculate_file_hash(self, filepath: str) -> Optional[str]:
         """파일의 MD5 해시값을 계산합니다."""
         hasher = hashlib.md5()
