@@ -45,13 +45,14 @@ class MainPresenter(QObject):
 
         # Connect View Signals
         self.view.scan_requested.connect(self.start_scan)
+        self.view.cancel_scan_requested.connect(self.cancel_scan)
         self.view.delete_requested.connect(self.delete_files)
         self.view.rename_requested.connect(self.rename_file)
         self.view.item_double_clicked.connect(self.open_preview)
 
     def start_scan(self, root_dir: str):
         """스캔 스레드를 시작합니다."""
-        self.view.btn_scan.setEnabled(False)
+        self.view.set_scanning_state(True)
         self.view.update_status("스캔 준비 중...")
 
         self._scan_thread = QThread()
@@ -67,8 +68,17 @@ class MainPresenter(QObject):
 
         self._scan_thread.start()
 
+    def cancel_scan(self):
+        """스캔 취소 요청 처리"""
+        if self._scan_worker:
+            self._scan_worker.cancel()
+            self.view.update_status("스캔 취소 중...")
+
     def _on_scan_finished(self, groups: Dict[str, List[str]]):
-        self.view.btn_scan.setEnabled(True)
+        self.view.set_scanning_state(False)
+        if self._scan_worker and self._scan_worker.scanner.is_cancelled():
+            self.view.finish_progress("스캔이 취소되었습니다.")
+            return
         self.model.set_duplicate_groups(groups)
         self.view.display_duplicate_groups(groups)
 

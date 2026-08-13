@@ -98,6 +98,15 @@ class MainView(QMainWindow):
         self.btn_scan.clicked.connect(self._on_scan_clicked)
         folder_layout.addWidget(self.btn_scan)
 
+        # 스캔 취소 버튼 (스캔 중에만 표시)
+        self.btn_cancel = QPushButton("스캔 취소")
+        self.btn_cancel.setStyleSheet(
+            "font-weight: bold; background-color: #f0ad4e; color: white; padding: 6px 12px;"
+        )
+        self.btn_cancel.setVisible(False)
+        self.btn_cancel.clicked.connect(self._on_cancel_clicked)
+        folder_layout.addWidget(self.btn_cancel)
+
         main_layout.addLayout(folder_layout)
 
         # 2. 진행 상태 바
@@ -271,6 +280,15 @@ class MainView(QMainWindow):
             QMessageBox.warning(self, "경고", "유효한 Root 폴더 경로를 입력하세요.")
             return
         self.scan_requested.emit(path)
+
+    def _on_cancel_clicked(self):
+        """스캔 취소 버튼 클릭 시 시그널 발행"""
+        self.cancel_scan_requested.emit()
+
+    def set_scanning_state(self, is_scanning: bool):
+        """스캔 중 상태에 따라 버튼 가시성 전환"""
+        self.btn_scan.setVisible(not is_scanning)
+        self.btn_cancel.setVisible(is_scanning)
 
     def get_checked_file_paths(self) -> List[str]:
         """현재 체크박스로 선택된(Checked) 모든 파일의 경로 리스트 반환"""
